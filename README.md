@@ -21,6 +21,9 @@ You can learn more about RacecarSim and download the current version [here](http
 
 ## Changelog
 
+### v2.9.0 Update - Grand Prix 2026 [7/31/2026]
+- Added Final Challenge - Grand Prix 2026 map
+
 ### v2.8.4 Bugfix - Autograder [6/27/2026]
 - Resolves incompatible autograder versioning number between RACECAR Sim and Edx platform.
 
