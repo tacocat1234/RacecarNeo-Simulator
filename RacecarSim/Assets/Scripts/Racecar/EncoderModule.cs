@@ -1,49 +1,67 @@
 using UnityEngine;
 
 /// <summary>
-/// Simulates the wheel encoder.
+/// Simulates the return of get_encoder_speed.
 /// </summary>
 public class EncoderModule : RacecarModule
 {
     #region Constants
 
     /// <summary>
-    /// The average relative error of encoder measurements.
+    /// The average relative error of encoder velocity measurements.
     /// This value is made up.
     /// </summary>
-    private const float errorFactor = 0.001f;
+    private const float velocityErrorFactor = 0.001f;
 
     /// <summary>
-    /// The average fixed error applied to encoder measurements.
+    /// The average fixed error applied to encoder velocity measurements.
     /// This value is made up.
     /// </summary>
-    private const float errorFixed = 0.01f;
-
-    /// <summary>
-    /// The gear ratio between driven and driver gears
-    /// (driven gear teeth / driver gear teeth).
-    /// </summary>
-    private const float gearRatio = 1.0f;
-
-    /// <summary>
-    /// The resolution of the encoder in counts per revolution.
-    /// Currently unused.
-    /// </summary>
-    private const int encoderResolution = 2500;
-
-    /// <summary>
-    /// Wheel diameter of simulated racecar.
-    /// </summary>
-    private const float wheelDiameter = 2.0f;
+    private const float velocityErrorFixed = 0.05f;
 
     #endregion
 
     #region Public Interface
 
     /// <summary>
-    /// Encoder speed in rotations per second.
+    /// The signed forward velocity of the car in meters/second.
+    /// Positive = moving forward relative to the car's transform.
+    /// Negative = moving backward relative to the car's transform.
     /// </summary>
-    public float RotationsPerSecond { get; private set; } = 0.0f;
+    public float SignedVelocity
+    {
+        get
+        {
+            if (!this.signedVelocity.HasValue)
+            {
+                Vector2 velocityXZ = new Vector2(
+                    this.rBody.velocity.x,
+                    this.rBody.velocity.z
+                );
+
+                float magnitude = velocityXZ.magnitude;
+
+                float sign = Mathf.Sign(
+                    Vector3.Dot(
+                        this.rBody.velocity,
+                        this.transform.forward
+                    )
+                );
+
+                float velocity = sign * magnitude;
+
+                if (Settings.IsRealism)
+                {
+                    velocity *= NormalDist.Random(1, EncoderModule.velocityErrorFactor);
+                    velocity += NormalDist.Random(0, EncoderModule.velocityErrorFixed);
+                }
+
+                this.signedVelocity = velocity;
+            }
+
+            return this.signedVelocity.Value;
+        }
+    }
 
     #endregion
 
@@ -53,59 +71,19 @@ public class EncoderModule : RacecarModule
     private Rigidbody rBody;
 
     /// <summary>
-    /// Position of the car during the previous physics update.
+    /// Private member for the SignedVelocity accessor.
     /// </summary>
-    private Vector3 prevPosition;
-
-    /// <summary>
-    /// Change in position since the previous physics update.
-    /// </summary>
-    private Vector3 DeltaPosition
-    {
-        get
-        {
-            return this.rBody.position - this.prevPosition;
-        }
-    }
-
-    /// <summary>
-    /// Change in encoder rotations since the previous physics update.
-    /// </summary>
-    private float DeltaRots
-    {
-        get
-        {
-            float displacement = DeltaPosition.magnitude;
-
-            float circumference = Mathf.PI * wheelDiameter;
-
-            return displacement / circumference * gearRatio;
-        }
-    }
+    private float? signedVelocity = null;
 
     protected override void Awake()
     {
         this.rBody = this.GetComponent<Rigidbody>();
-        this.prevPosition = this.rBody.position;
 
         base.Awake();
     }
 
-    private void FixedUpdate()
+    private void LateUpdate()
     {
-        float deltaRots = this.DeltaRots;
-
-        float rotationsPerSecond = deltaRots / Time.fixedDeltaTime; //convert to rots/secs to match expected encoder speed units
-
-        if (Settings.IsRealism)
-        {
-            rotationsPerSecond *= NormalDist.Random(1, EncoderModule.errorFactor);
-
-            rotationsPerSecond += NormalDist.Random(0, EncoderModule.errorFixed);
-        }
-
-        this.RotationsPerSecond = rotationsPerSecond;
-
-        this.prevPosition = this.rBody.position;
+        this.signedVelocity = null;
     }
 }

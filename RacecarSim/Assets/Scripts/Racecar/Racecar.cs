@@ -182,6 +182,7 @@ public class Racecar : MonoBehaviour
         this.Drive = this.GetComponent<Drive>();
         this.Lidar = this.GetComponentInChildren<Lidar>();
         this.Physics = this.GetComponent<PhysicsModule>();
+        this.Encoder = this.GetComponent<EncoderModule>();
 
         // Begin with main player camera (0th camera)
         if (this.playerCameras.Length > 0)

@@ -417,7 +417,7 @@ public class PythonInterface
                         break;
 
                     case Header.get_encoder_speed:
-                        sendData = BitConverter.GetBytes(Encoder.RotationsPerSecond);
+                        sendData = BitConverter.GetBytes(Encoder.SignedVelocity);
                         this.udpClient.Send(sendData, sendData.Length, endPoint);
                         break;
 
@@ -601,7 +601,7 @@ public class PythonInterface
                     break;
 
                 case Header.get_encoder_speed:
-                    sendData = BitConverter.GetBytes(Encoder.RotationsPerSecond);
+                    sendData = BitConverter.GetBytes(Encoder.SignedVelocity);
                     this.udpClientAsync.Send(sendData, sendData.Length, receiveEndPoint);
                     break;
 
