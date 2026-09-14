@@ -69,6 +69,11 @@ public class Racecar : MonoBehaviour
     public PhysicsModule Physics { get; private set; }
 
     /// <summary>
+    /// Exposes the encoder.
+    /// </summary>
+    public EncoderModule Encoder {get; private set; }
+
+    /// <summary>
     /// The heads-up display controlled by this car, if any.
     /// </summary>
     public Hud Hud { get; set; }

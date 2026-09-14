@@ -9,13 +9,13 @@ public class EncoderModule : RacecarModule
 
     /// <summary>
     /// The average relative error of encoder measurements.
-    /// This value is made up. (Im too lazy too find real encoder values)
+    /// This value is made up.
     /// </summary>
-    private const float errorFactor = 0.0005f;
+    private const float errorFactor = 0.001f;
 
     /// <summary>
     /// The average fixed error applied to encoder measurements.
-    /// This value is made up. (Im too lazy too find real encoder values)
+    /// This value is made up.
     /// </summary>
     private const float errorFixed = 0.01f;
 
@@ -33,7 +33,6 @@ public class EncoderModule : RacecarModule
 
     /// <summary>
     /// Wheel diameter of simulated racecar.
-    /// This value is made up (It is based on simulated rather than real dimensions).
     /// </summary>
     private const float wheelDiameter = 2.0f;
 
@@ -42,9 +41,9 @@ public class EncoderModule : RacecarModule
     #region Public Interface
 
     /// <summary>
-    /// Cumulative rotation count of the encoder.
+    /// Encoder speed in rotations per second.
     /// </summary>
-    public float RotCount { get; private set; } = 0.0f;
+    public float RotationsPerSecond { get; private set; } = 0.0f;
 
     #endregion
 
@@ -76,7 +75,7 @@ public class EncoderModule : RacecarModule
     {
         get
         {
-            float displacement = DeltaPosition.magnitude; //wheel travel dist
+            float displacement = DeltaPosition.magnitude;
 
             float circumference = Mathf.PI * wheelDiameter;
 
@@ -96,14 +95,16 @@ public class EncoderModule : RacecarModule
     {
         float deltaRots = this.DeltaRots;
 
+        float rotationsPerSecond = deltaRots / Time.fixedDeltaTime; //convert to rots/secs to match expected encoder speed units
+
         if (Settings.IsRealism)
         {
-            deltaRots *= NormalDist.Random(1, EncoderModule.errorFactor);
+            rotationsPerSecond *= NormalDist.Random(1, EncoderModule.errorFactor);
 
-            deltaRots += NormalDist.Random(0, EncoderModule.errorFixed);
+            rotationsPerSecond += NormalDist.Random(0, EncoderModule.errorFixed);
         }
 
-        this.RotCount += deltaRots; //accumulate
+        this.RotationsPerSecond = rotationsPerSecond;
 
         this.prevPosition = this.rBody.position;
     }

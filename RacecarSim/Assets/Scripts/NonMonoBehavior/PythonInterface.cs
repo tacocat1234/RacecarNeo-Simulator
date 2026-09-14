@@ -161,6 +161,7 @@ public class PythonInterface
         lidar_get_samples,
         physics_get_linear_acceleration,
         physics_get_angular_velocity,
+        get_encoder_speed,
     }
 
     /// <summary>
@@ -415,6 +416,11 @@ public class PythonInterface
                         this.udpClient.Send(sendData, sendData.Length, endPoint);
                         break;
 
+                    case Header.get_encoder_speed:
+                        sendData = BitConverter.GetBytes(Encoder.RotationsPerSecond);
+                        this.udpClient.Send(sendData, sendData.Length, endPoint);
+                        break;
+
                     default:
                         Debug.LogError($">> Error: The function {header} is not supported by RacecarSim.");
                         pythonFinished = true;
@@ -582,7 +588,7 @@ public class PythonInterface
                 case Header.camera_get_color_image:
                     this.SendFragmentedAsync(racecar.Camera.GetColorImageRawAsync(), 32, receiveEndPoint);
                     break;
-
+`
                 case Header.camera_get_depth_image:
                     sendData = racecar.Camera.GetDepthImageRawAsync();
                     this.udpClientAsync.Send(sendData, sendData.Length, receiveEndPoint);
@@ -591,6 +597,11 @@ public class PythonInterface
                 case Header.lidar_get_samples:
                     sendData = new byte[sizeof(float) * Lidar.NumSamples];
                     Buffer.BlockCopy(racecar.Lidar.Samples, 0, sendData, 0, sendData.Length);
+                    this.udpClientAsync.Send(sendData, sendData.Length, receiveEndPoint);
+                    break;
+
+                case Header.get_encoder_speed:
+                    sendData = BitConverter.GetBytes(Encoder.RotationsPerSecond);
                     this.udpClientAsync.Send(sendData, sendData.Length, receiveEndPoint);
                     break;
 
